@@ -16,6 +16,7 @@ classifiers = [
     
 ]
 dependencies = [
+    "fg-data-profiling[notebook]>=4.19.1",
     "ipython",
     "jupyterlab",
     "loguru",
@@ -30,10 +31,11 @@ dependencies = [
     "ruff",
     "scikit-learn",
     "seaborn>=0.13.2",
+    "setuptools<81",
     "tqdm",
     "typer",
 ]
-requires-python = "==3.13.3"
+requires-python = ">=3.12,<3.13"
 
 
 [tool.ruff]
@@ -47,4 +49,9 @@ extend-select = ["I"]  # Add import sorting
 [tool.ruff.lint.isort]
 known-first-party = ["module_olist"]
 force-sort-within-sections = true
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.3.0",
+]
 
