@@ -1,3 +1,12 @@
+# BASE ANALÍTICA
+#       ↓
+# create_features()
+#       ↓
+# promised_days
+# purchase_month
+# purchase_weekday
+# purchase_hour
+
 import pandas as pd
 
 def create_features(data: pd.DataFrame) -> pd.DataFrame:

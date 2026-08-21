@@ -1,3 +1,23 @@
+# CSV orders
+#       ↓
+# create_target()
+#       ↓
+# somente pedidos entregues + datas necessárias
+#       ↓
+# cria is_late
+#       ↓
+# CSV items
+#       ↓
+# aggregate_items()
+#       ↓
+# 1 linha por pedido
+#       ↓
+# customers
+#       ↓
+# merge
+#       ↓
+# BASE ANALÍTICA
+
 import pandas as pd
 from pathlib import Path
 from loguru import logger
