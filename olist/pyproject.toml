@@ -19,6 +19,7 @@ dependencies = [
     "fg-data-profiling[notebook]>=4.19.1",
     "ipython",
     "jupyterlab",
+    "lightgbm>=4.7.0",
     "loguru",
     "matplotlib",
     "mkdocs",
@@ -35,6 +36,7 @@ dependencies = [
     "setuptools<81",
     "tqdm",
     "typer",
+    "xgboost>=3.4.1",
 ]
 requires-python = ">=3.12,<3.13"
 
