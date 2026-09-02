@@ -1,78 +1,110 @@
 import numpy as np
+
 from loguru import logger
+
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
     precision_score,
     recall_score,
     roc_auc_score,
-    roc_curve,
 )
 
-def evaluate_model(models, X_test, y_test):
 
-    results = {}
+def evaluate_model(
+    model,
+    X_test,
+    y_test,
+    threshold,
+):
+    """
+    Avalia o modelo final utilizando o threshold
+    definido durante a validação cruzada.
+    """
 
-    for name, model in models.items():
+    # Probabilidade da classe positiva
+    y_proba = model.predict_proba(
+        X_test
+    )[:, 1]
 
-        y_proba = model.predict_proba(X_test)[:,1]
+    # Converte probabilidade em classe
+    # utilizando o threshold escolhido na CV
+    y_pred = (
+        y_proba >= threshold
+    ).astype(int)
 
-        best_threshold = None
-        best_f1 = -1
-        best_precision = None
-        best_recall = None
+    # Métricas
+    accuracy = accuracy_score(
+        y_test,
+        y_pred,
+    )
 
+    precision = precision_score(
+        y_test,
+        y_pred,
+        zero_division=0,
+    )
 
-        for threshold in np.arange(0.05,0.5,0.01):
+    recall = recall_score(
+        y_test,
+        y_pred,
+        zero_division=0,
+    )
 
-            y_pred = (
-                y_proba >= threshold
-            ).astype(int)
+    f1 = f1_score(
+        y_test,
+        y_pred,
+        zero_division=0,
+    )
 
+    roc_auc = roc_auc_score(
+        y_test,
+        y_proba,
+    )
 
-            precision = precision_score(
-                y_test,
-                y_pred
-            )
+    results = {
+        "threshold": threshold,
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "roc_auc": roc_auc,
+    }
 
-            recall = recall_score(
-                y_test,
-                y_pred
-            )
+    logger.info(
+        "========================================"
+    )
 
-            f1 = f1_score(
-                y_test,
-                y_pred
-            )
+    logger.info(
+        "AVALIAÇÃO FINAL"
+    )
 
+    logger.info(
+        f"Threshold: {threshold:.2f}"
+    )
 
-            if f1 > best_f1:
+    logger.info(
+        f"Accuracy: {accuracy:.3f}"
+    )
 
-                best_f1 = f1
-                best_threshold = threshold
-                best_precision = precision
-                best_recall = recall
+    logger.info(
+        f"Precision: {precision:.3f}"
+    )
 
+    logger.info(
+        f"Recall: {recall:.3f}"
+    )
 
-        roc_auc = roc_auc_score(
-            y_test,
-            y_proba
-        )
+    logger.info(
+        f"F1: {f1:.3f}"
+    )
 
+    logger.info(
+        f"ROC AUC: {roc_auc:.3f}"
+    )
 
-        results[name] = {
-            "threshold": best_threshold,
-            "precision": best_precision,
-            "recall": best_recall,
-            "f1": best_f1,
-            "roc_auc": roc_auc
-        }
-
-
-        logger.info(f"Modelo: {name}")
-        logger.info(f"Threshold: {best_threshold:.2f}")
-        logger.info(f"F1: {best_f1:.3f}")
-        logger.info(f"ROC AUC: {roc_auc:.3f}")
-
+    logger.info(
+        "========================================"
+    )
 
     return results
