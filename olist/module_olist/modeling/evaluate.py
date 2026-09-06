@@ -1,25 +1,25 @@
-import numpy as np
-
 from loguru import logger
 
 from sklearn.metrics import (
     accuracy_score,
-    f1_score,
     precision_score,
     recall_score,
+    f1_score,
     roc_auc_score,
+    average_precision_score,
 )
 
 
 def evaluate_model(
     model,
+    model_name,
     X_test,
     y_test,
     threshold,
 ):
     """
-    Avalia o modelo final utilizando o threshold
-    definido durante a validação cruzada.
+    Realiza a avaliação final do modelo
+    no conjunto de teste.
     """
 
     # Probabilidade da classe positiva
@@ -27,8 +27,7 @@ def evaluate_model(
         X_test
     )[:, 1]
 
-    # Converte probabilidade em classe
-    # utilizando o threshold escolhido na CV
+    # Aplica o threshold definido na validação
     y_pred = (
         y_proba >= threshold
     ).astype(int)
@@ -62,23 +61,18 @@ def evaluate_model(
         y_proba,
     )
 
-    results = {
-        "threshold": threshold,
-        "accuracy": accuracy,
-        "precision": precision,
-        "recall": recall,
-        "f1": f1,
-        "roc_auc": roc_auc,
-    }
-
-    logger.info(
-        "========================================"
+    pr_auc = average_precision_score(
+        y_test,
+        y_proba,
     )
 
-    logger.info(
-        "AVALIAÇÃO FINAL"
-    )
+    # Resultados Finais
+    logger.info("=" * 60)
 
+    logger.success(
+        f"MODELO FINAL: {model_name}"
+    )
+    
     logger.info(
         f"Threshold: {threshold:.2f}"
     )
@@ -100,11 +94,9 @@ def evaluate_model(
     )
 
     logger.info(
-        f"ROC AUC: {roc_auc:.3f}"
+        f"ROC-AUC: {roc_auc:.3f}"
     )
 
     logger.info(
-        "========================================"
+        f"PR-AUC: {pr_auc:.3f}"
     )
-
-    return results

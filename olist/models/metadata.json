@@ -1,0 +1,6 @@
+{
+    "model_name": "LightGBM",
+    "threshold": 0.14,
+    "selection_metric": "pr_auc",
+    "threshold_metric": "f1"
+}

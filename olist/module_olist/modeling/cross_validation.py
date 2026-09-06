@@ -67,23 +67,21 @@ def find_best_threshold(y_true, y_proba):
 
     best_threshold = None
     best_f1 = -1
+
     best_accuracy = None
     best_precision = None
     best_recall = None
 
-    # Testa diferentes thresholds
-    for threshold in np.arange(
-        0.01,
-        1.00,
-        0.01,
-    ):
+    logger.info(
+        "Testando thresholds de 0.01 até 0.99..."
+    )
 
-        # Converte probabilidades em classes
+    for threshold in np.arange(0.01, 1.00, 0.01):
+
         y_pred = (
             y_proba >= threshold
         ).astype(int)
 
-        # Calcula as métricas
         accuracy = accuracy_score(
             y_true,
             y_pred,
@@ -107,14 +105,14 @@ def find_best_threshold(y_true, y_proba):
             zero_division=0,
         )
 
-        # Verifica se encontrou um F1 melhor
         if f1 > best_f1:
 
-            best_f1 = f1
             best_threshold = threshold
+
             best_accuracy = accuracy
             best_precision = precision
             best_recall = recall
+            best_f1 = f1
 
     return {
         "threshold": best_threshold,
@@ -133,36 +131,40 @@ def cross_validate_models(
     Executa validação cruzada dos modelos.
 
     Para cada modelo:
-    - Executa Cross Validation;
-    - Calcula métricas dos folds;
-    - Gera probabilidades Out-of-Fold;
-    - Encontra o melhor threshold pelo F1;
-    - Compara os modelos pelo F1 OOF otimizado.
+
+    - executa Cross Validation;
+    - calcula métricas dos folds;
+    - gera probabilidades Out-of-Fold;
+    - encontra o melhor threshold pelo F1;
+    - compara os modelos pelo F1 OOF otimizado.
 
     Retorna:
+
     - nome do melhor modelo;
     - melhor threshold.
     """
 
-    # ============================================================
+    # =========================================================
     # PIPELINES
-    # ============================================================
+    # =========================================================
 
     pipelines = {
-        "Gradient Boosting":
-            create_gradient_boosting_pipeline(),
+        "Gradient Boosting": (
+            create_gradient_boosting_pipeline()
+        ),
 
-        "XGBoost":
-            create_xgboost_pipeline(),
+        "XGBoost": (
+            create_xgboost_pipeline()
+        ),
 
-        "LightGBM":
-            create_lightgbm_pipeline(),
+        "LightGBM": (
+            create_lightgbm_pipeline()
+        ),
     }
 
-
-    # ============================================================
-    # ESTRATÉGIA DE CROSS VALIDATION
-    # ============================================================
+    # =========================================================
+    # CROSS VALIDATION
+    # =========================================================
 
     kf = StratifiedKFold(
         n_splits=5,
@@ -170,10 +172,9 @@ def cross_validate_models(
         random_state=42,
     )
 
-
-    # ============================================================
+    # =========================================================
     # MÉTRICAS
-    # ============================================================
+    # =========================================================
 
     scoring = {
         "accuracy": "accuracy",
@@ -184,34 +185,37 @@ def cross_validate_models(
         "pr_auc": "average_precision",
     }
 
-
-    # Guarda os resultados dos modelos
     cv_results = {}
 
+    total_models = len(pipelines)
 
-    # ============================================================
-    # CROSS VALIDATION
-    # ============================================================
+    # =========================================================
+    # EXECUÇÃO DOS MODELOS
+    # =========================================================
 
-    for name, pipeline in pipelines.items():
-
-        print("\n")
-        print("=" * 60)
-        print(f"MODELO: {name}")
-        print("=" * 60)
+    for model_index, (name, pipeline) in enumerate(
+        pipelines.items(),
+        start=1,
+    ):
 
         logger.info(
-            f"[{name}] Iniciando Cross Validation..."
+            "=" * 60
         )
 
+        logger.info(
+            f"MODELO {model_index}/{total_models}: {name}"
+        )
 
-        # ========================================================
-        # 1 - MÉTRICAS DOS FOLDS
-        # ========================================================
+        logger.info(
+            "Iniciando Cross Validation com 5 folds..."
+        )
 
-        print(
-            f"[{name}] [1/3] "
-            f"Iniciando Cross Validation..."
+        # =====================================================
+        # CROSS VALIDATE
+        # =====================================================
+
+        logger.info(
+            f"[{name}] Treinando os 5 folds..."
         )
 
         results = cross_validate(
@@ -220,26 +224,17 @@ def cross_validate_models(
             y=y_train,
             cv=kf,
             scoring=scoring,
-            return_train_score=False,
-        )
-
-        print(
-            f"[{name}] [1/3] "
-            f"Cross Validation concluído!"
+            return_train_score=True,
+            n_jobs=-1,
         )
 
         logger.success(
             f"[{name}] Cross Validation concluído."
         )
 
-
-        # ========================================================
-        # RESUMO DAS MÉTRICAS
-        # ========================================================
-
-        print(
-            f"[{name}] Calculando resumo das métricas..."
-        )
+        # =====================================================
+        # RESUMO
+        # =====================================================
 
         summary = summarize_cv(
             results
@@ -251,18 +246,12 @@ def cross_validate_models(
             f"CROSS VALIDATION - {name}"
         )
         print("=" * 60)
-
         print(summary.to_string(index=False))
+        print("=" * 60)
 
-
-        # ========================================================
-        # 2 - PROBABILIDADES OUT-OF-FOLD
-        # ========================================================
-
-        print(
-            f"\n[{name}] [2/3] "
-            f"Gerando probabilidades Out-of-Fold..."
-        )
+        # =====================================================
+        # OUT-OF-FOLD
+        # =====================================================
 
         logger.info(
             f"[{name}] Calculando probabilidades "
@@ -275,30 +264,19 @@ def cross_validate_models(
             y=y_train,
             cv=kf,
             method="predict_proba",
+            n_jobs=-1,
         )[:, 1]
 
-        print(
-            f"[{name}] [2/3] "
-            f"Out-of-Fold concluído!"
-        )
-
         logger.success(
-            f"[{name}] Probabilidades OOF concluídas."
+            f"[{name}] Probabilidades Out-of-Fold calculadas."
         )
 
-
-        # ========================================================
-        # 3 - MELHOR THRESHOLD
-        # ========================================================
-
-        print(
-            f"\n[{name}] [3/3] "
-            f"Procurando melhor threshold..."
-        )
+        # =====================================================
+        # THRESHOLD
+        # =====================================================
 
         logger.info(
-            f"[{name}] Testando thresholds de "
-            f"0.01 até 0.99..."
+            f"[{name}] Procurando melhor threshold..."
         )
 
         threshold_results = find_best_threshold(
@@ -306,45 +284,43 @@ def cross_validate_models(
             y_proba=y_proba_oof,
         )
 
-        print(
-            f"[{name}] [3/3] "
-            f"Threshold encontrado: "
-            f"{threshold_results['threshold']:.2f}"
-        )
-
-        logger.success(
-            f"[{name}] Threshold otimizado."
-        )
-
-
-        # ========================================================
-        # GUARDA OS RESULTADOS
-        # ========================================================
+        # =====================================================
+        # RESULTADOS
+        # =====================================================
 
         cv_results[name] = {
-
             "results": results,
 
             "summary": summary,
 
             "threshold": (
-                threshold_results["threshold"]
+                threshold_results[
+                    "threshold"
+                ]
             ),
 
             "accuracy": (
-                threshold_results["accuracy"]
+                threshold_results[
+                    "accuracy"
+                ]
             ),
 
             "precision": (
-                threshold_results["precision"]
+                threshold_results[
+                    "precision"
+                ]
             ),
 
             "recall": (
-                threshold_results["recall"]
+                threshold_results[
+                    "recall"
+                ]
             ),
 
             "f1_oof": (
-                threshold_results["f1"]
+                threshold_results[
+                    "f1"
+                ]
             ),
 
             "pr_auc": (
@@ -354,10 +330,9 @@ def cross_validate_models(
             ),
         }
 
-
-        # ========================================================
-        # RESULTADO COM THRESHOLD OTIMIZADO
-        # ========================================================
+        # =====================================================
+        # RESULTADO DO MODELO
+        # =====================================================
 
         logger.success(
             f"THRESHOLD OTIMIZADO - {name}"
@@ -388,25 +363,26 @@ def cross_validate_models(
             f"{threshold_results['f1']:.3f}"
         )
 
-
-        # ========================================================
-        # MODELO CONCLUÍDO
-        # ========================================================
-
-        print("\n")
-        print("=" * 60)
-        print(
-            f"{name} CONCLUÍDO!"
+        logger.info(
+            f"PR-AUC médio: "
+            f"{results['test_pr_auc'].mean():.3f}"
         )
-        print("=" * 60)
 
+        logger.success(
+            f"Modelo {name} finalizado "
+            f"({model_index}/{total_models})."
+        )
 
-    # ============================================================
-    # ESCOLHA DO MELHOR MODELO
-    # ============================================================
+    # =========================================================
+    # SELEÇÃO DO MELHOR MODELO
+    # =========================================================
 
     logger.info(
-        "Comparando os modelos pelo F1 OOF..."
+        "=" * 60
+    )
+
+    logger.info(
+        "Comparando os modelos..."
     )
 
     best_model_name = max(
@@ -416,95 +392,77 @@ def cross_validate_models(
         ),
     )
 
-
-    # Recupera os resultados do vencedor
     best_results = cv_results[
         best_model_name
     ]
 
-    best_threshold = best_results[
-        "threshold"
-    ]
-
-    best_accuracy = best_results[
-        "accuracy"
-    ]
-
-    best_precision = best_results[
-        "precision"
-    ]
-
-    best_recall = best_results[
-        "recall"
-    ]
-
-    best_f1 = best_results[
-        "f1_oof"
-    ]
-
-    best_pr_auc = best_results[
-        "pr_auc"
-    ]
-
-
-    # ============================================================
-    # RESULTADO FINAL DA SELEÇÃO
-    # ============================================================
-
-    print("\n")
-    print("=" * 60)
-    print("MODELO SELECIONADO")
-    print("=" * 60)
-
-    print(
-        f"Modelo: {best_model_name}"
+    best_threshold = (
+        best_results["threshold"]
     )
 
-    print(
-        f"Threshold: {best_threshold:.2f}"
+    best_accuracy = (
+        best_results["accuracy"]
     )
 
-    print(
-        f"Accuracy OOF: {best_accuracy:.3f}"
+    best_precision = (
+        best_results["precision"]
     )
 
-    print(
-        f"Precision OOF: {best_precision:.3f}"
+    best_recall = (
+        best_results["recall"]
     )
 
-    print(
-        f"Recall OOF: {best_recall:.3f}"
+    best_f1 = (
+        best_results["f1_oof"]
     )
 
-    print(
-        f"F1 OOF: {best_f1:.3f}"
+    best_pr_auc = (
+        best_results["pr_auc"]
     )
 
-    print(
-        f"PR-AUC médio CV: {best_pr_auc:.3f}"
-    )
-
-    print("=" * 60)
-
+    # =========================================================
+    # RESULTADO FINAL
+    # =========================================================
 
     logger.success(
-        f"Melhor modelo: "
-        f"{best_model_name}"
+        "MODELO SELECIONADO"
     )
 
     logger.info(
-        f"F1 OOF otimizado: "
-        f"{best_f1:.3f}"
+        f"Modelo: {best_model_name}"
+    )
+
+    logger.info(
+        f"Threshold: {best_threshold:.2f}"
+    )
+
+    logger.info(
+        f"Accuracy OOF: {best_accuracy:.3f}"
+    )
+
+    logger.info(
+        f"Precision OOF: {best_precision:.3f}"
+    )
+
+    logger.info(
+        f"Recall OOF: {best_recall:.3f}"
+    )
+
+    logger.info(
+        f"F1 OOF: {best_f1:.3f}"
+    )
+
+    logger.info(
+        f"PR-AUC médio CV: {best_pr_auc:.3f}"
     )
 
     logger.success(
         "Cross Validation concluído."
     )
 
-
-    # ============================================================
+    # =========================================================
     # RETORNO
-    # ============================================================
+    # =========================================================
 
     return (
         best_model_name,
