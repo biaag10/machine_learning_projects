@@ -1,28 +1,25 @@
+from loguru import logger
+
 from module_olist.config import (
-    RAW_DATA_DIR,
     INTERIM_DATA_DIR,
     MODELS_DIR,
+    RAW_DATA_DIR,
 )
-
 from module_olist.dataset import (
-    load_dataset,
     create_dataset,
+    load_dataset,
     save_dataset,
 )
-
+from module_olist.explain import generate_explanations
 from module_olist.features import create_features
-
-from module_olist.split import split_data
-
-from module_olist.modeling.train import train_model
-
-from module_olist.modeling.evaluate import evaluate_model
-
+from module_olist.inference import run_inference
 from module_olist.modeling.cross_validation import (
     cross_validate_models,
 )
+from module_olist.modeling.evaluate import evaluate_model
+from module_olist.modeling.train import train_model
+from module_olist.split import split_data
 
-from loguru import logger
 
 def main():
 
@@ -119,6 +116,27 @@ def main():
         X_test=X_test,
         y_test=y_test,
         threshold=best_threshold,
+    )
+
+    # =============================================
+    # INFERÊNCIA DE EXEMPLO
+    # =============================================
+
+    run_inference(
+        data=data,
+        model=model,
+        model_name=best_model_name,
+        threshold=best_threshold,
+    )
+
+    # =============================================
+    # EXPLICABILIDADE (SHAP)
+    # =============================================
+
+    generate_explanations(
+        data=data,
+        model=model,
+        model_name=best_model_name,
     )
 
     logger.success(

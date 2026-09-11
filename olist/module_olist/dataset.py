@@ -18,9 +18,11 @@
 #       ↓
 # BASE ANALÍTICA
 
-import pandas as pd
 from pathlib import Path
+
 from loguru import logger
+import pandas as pd
+
 
 def load_dataset(orders_path: Path, items_path: Path, customers_path: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
@@ -53,6 +55,7 @@ def save_dataset(dataset: pd.DataFrame, output_path: Path) -> None:
         dataset (pd.DataFrame): DataFrame a ser salvo.
         output_path (Path): Caminho para o arquivo CSV de saída.
     """
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     dataset.to_csv(output_path, index=False)
     logger.info(f"Dataset salvo em: {output_path}")
     
