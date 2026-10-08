@@ -18,6 +18,7 @@ classifiers = [
 dependencies = [
     "ipykernel>=7.3.0",
     "loguru",
+    "matplotlib>=3.11.2",
     "mkdocs",
     "pip",
     "pytest",

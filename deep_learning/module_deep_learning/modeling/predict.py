@@ -1,30 +1,68 @@
-from pathlib import Path
-
 from loguru import logger
-from tqdm import tqdm
-import typer
+import numpy as np
+from tensorflow import keras
+from tensorflow.keras.utils import img_to_array, load_img
 
-from module_deep_learning.config import MODELS_DIR, PROCESSED_DATA_DIR
+from module_deep_learning.config import (
+    CLASS_NAMES,
+    IMG_SHAPE,
+    MODELS_DIR,
+)
+from module_deep_learning.features import create_features
 
-app = typer.Typer()
+
+def load_model(model_path=MODELS_DIR / "melhor_modelo_cifar10.keras"):
+
+    if not model_path.exists():
+        raise FileNotFoundError(
+            f"Modelo não encontrado em {model_path}. "
+            f"Rode o treinamento antes."
+        )
+
+    logger.info(
+        f"Carregando modelo de: {model_path}"
+    )
+
+    return keras.models.load_model(model_path)
 
 
-@app.command()
-def main(
-    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    features_path: Path = PROCESSED_DATA_DIR / "test_features.csv",
-    model_path: Path = MODELS_DIR / "model.pkl",
-    predictions_path: Path = PROCESSED_DATA_DIR / "test_predictions.csv",
-    # -----------------------------------------
-):
-    # ---- REPLACE THIS WITH YOUR OWN CODE ----
-    logger.info("Performing inference for model...")
-    for i in tqdm(range(10), total=10):
-        if i == 5:
-            logger.info("Something happened for iteration 5.")
-    logger.success("Inference complete.")
-    # -----------------------------------------
+def predict(model, X):
+
+    # X precisa estar normalizado (create_features)
+    probs = model.predict(X, verbose=0)
+
+    y_pred = np.argmax(probs, axis=1)
+
+    return probs, y_pred
+
+
+def predict_image(model, image_path):
+
+    # Classifica uma imagem qualquer do disco
+    img = load_img(image_path, target_size=IMG_SHAPE[:2])
+
+    X = create_features(
+        img_to_array(img)[np.newaxis, ...]
+    )
+
+    probs, y_pred = predict(model, X)
+
+    classe = CLASS_NAMES[y_pred[0]]
+    confianca = float(probs[0, y_pred[0]])
+
+    logger.info(
+        f"{image_path.name}: {classe} ({confianca:.1%})"
+    )
+
+    return classe, confianca
+
+
+def main():
+
+    model = load_model()
+
+    model.summary(print_fn=logger.info)
 
 
 if __name__ == "__main__":
-    app()
+    main()
