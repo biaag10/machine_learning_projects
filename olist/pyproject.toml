@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "module_olist"
 version = "0.0.1"
-description = "Brazilian e-commerce public dataset."
+description = "Previsão de risco de atraso em pedidos da Olist."
 authors = [
   { name = "agbianca" },
 ]

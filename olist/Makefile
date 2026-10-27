@@ -3,8 +3,8 @@
 #################################################################################
 
 PROJECT_NAME = olist
-PYTHON_VERSION = 3.13.3
-PYTHON_INTERPRETER = python
+PYTHON_VERSION = 3.12
+PYTHON_INTERPRETER = uv run python
 
 #################################################################################
 # COMMANDS                                                                      #
@@ -15,8 +15,6 @@ PYTHON_INTERPRETER = python
 .PHONY: requirements
 requirements:
 	uv sync
-	
-
 
 
 ## Delete all compiled Python files
@@ -39,11 +37,10 @@ format:
 	ruff format
 
 
-
 ## Run tests
 .PHONY: test
 test:
-	python -m pytest tests
+	$(PYTHON_INTERPRETER) -m pytest tests
 
 
 ## Set up Python interpreter environment
@@ -53,8 +50,6 @@ create_environment:
 	@echo ">>> New uv virtual environment created. Activate with:"
 	@echo ">>> Windows: .\\\\.venv\\\\Scripts\\\\activate"
 	@echo ">>> Unix/macOS: source ./.venv/bin/activate"
-	
-
 
 
 #################################################################################
@@ -62,10 +57,20 @@ create_environment:
 #################################################################################
 
 
-## Make dataset
-.PHONY: data
-data: requirements
-	$(PYTHON_INTERPRETER) module_olist/dataset.py
+## Roda o pipeline completo (dados -> features -> CV -> treino -> avaliacao)
+.PHONY: train
+train: requirements
+	$(PYTHON_INTERPRETER) -m module_olist.main
+
+## Faz inferencia com o modelo salvo
+.PHONY: predict
+predict:
+	$(PYTHON_INTERPRETER) -m module_olist.inference
+
+## Gera os graficos de explicabilidade (SHAP)
+.PHONY: explain
+explain:
+	$(PYTHON_INTERPRETER) -m module_olist.explain
 
 
 #################################################################################
