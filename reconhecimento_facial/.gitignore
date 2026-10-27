@@ -5,13 +5,13 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# Variáveis de ambiente
+# VariÃ¡veis de ambiente
 .env
 
-# Cache de embeddings gerado pelo DeepFace.find (não usado, mas evita sujeira)
+# Cache de embeddings gerado pelo DeepFace.find (nÃ£o usado, mas evita sujeira)
 *.pkl
 
-# Fotos (direitos autorais / dados pessoais): ficam s� na m�quina local
+# Fotos (direitos autorais / dados pessoais): ficam só na máquina local
 data/autorizados/*
 data/teste/*
 outputs/*.jpg
