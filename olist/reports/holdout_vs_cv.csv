@@ -1,0 +1,3 @@
+estrategia,pr_auc_media,pr_auc_min,pr_auc_max
+"holdout (1 split, 5 sementes)",0.2745,0.2616,0.2865
+cross-validation (5 folds),0.267,0.2626,0.2745

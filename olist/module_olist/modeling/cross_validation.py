@@ -1,21 +1,27 @@
-from sklearn.model_selection import (
-    StratifiedKFold,
-    cross_validate,
-    cross_val_predict,
-)
+from loguru import logger
+import matplotlib
 
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-)
-
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.base import clone
+from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    f1_score,
+    precision_score,
+    recall_score,
+)
+from sklearn.model_selection import (
+    StratifiedKFold,
+    cross_val_predict,
+    cross_validate,
+    learning_curve,
+    train_test_split,
+)
 
-from loguru import logger
-
+from module_olist.config import FIGURES_DIR, REPORTS_DIR
 from module_olist.pipeline import (
     create_gradient_boosting_pipeline,
     create_xgboost_pipeline,
@@ -28,8 +34,14 @@ def summarize_cv(results):
     Resume os resultados da validação cruzada.
 
     Para cada métrica, calcula:
-    - média dos folds;
-    - desvio padrão dos folds.
+    - média e desvio padrão dos folds de VALIDAÇÃO;
+    - média dos folds de TREINO;
+    - gap = treino - validação (diagnóstico de overfitting).
+
+    Gap grande  -> o modelo memoriza o treino (overfitting).
+    Treino e validação baixos -> o modelo é simples demais (underfitting).
+    Desvio padrão grande -> o desempenho depende muito de quais dados caem
+    em cada fold (modelo pouco robusto).
     """
 
     metrics = [
@@ -45,13 +57,16 @@ def summarize_cv(results):
 
     for metric in metrics:
 
-        values = results[f"test_{metric}"]
+        val_values = results[f"test_{metric}"]
+        train_values = results[f"train_{metric}"]
 
         summary.append(
             {
                 "metric": metric,
-                "mean": values.mean(),
-                "std": values.std(),
+                "mean": val_values.mean(),
+                "std": val_values.std(),
+                "train_mean": train_values.mean(),
+                "gap": train_values.mean() - val_values.mean(),
             }
         )
 
@@ -240,14 +255,26 @@ def cross_validate_models(
             results
         )
 
-        print("\n")
-        print("=" * 60)
-        print(
-            f"CROSS VALIDATION - {name}"
+        logger.info(
+            f"CROSS VALIDATION - {name}\n"
+            f"{summary.round(4).to_string(index=False)}"
         )
-        print("=" * 60)
-        print(summary.to_string(index=False))
-        print("=" * 60)
+
+        # Diagnóstico de overfitting pelo PR-AUC (métrica principal)
+        pr_auc_gap = summary.loc[
+            summary["metric"] == "pr_auc", "gap"
+        ].iloc[0]
+
+        if pr_auc_gap > 0.10:
+            logger.warning(
+                f"[{name}] Possível overfitting: PR-AUC treino - validação = "
+                f"{pr_auc_gap:.3f}"
+            )
+        else:
+            logger.info(
+                f"[{name}] Gap treino-validação no PR-AUC: {pr_auc_gap:.3f} "
+                f"(sem sinal forte de overfitting)"
+            )
 
         # =====================================================
         # OUT-OF-FOLD
@@ -328,6 +355,14 @@ def cross_validate_models(
                     "test_pr_auc"
                 ].mean()
             ),
+
+            "pr_auc_std": (
+                results[
+                    "test_pr_auc"
+                ].std()
+            ),
+
+            "pr_auc_gap": pr_auc_gap,
         }
 
         # =====================================================
@@ -461,6 +496,30 @@ def cross_validate_models(
     )
 
     # =========================================================
+    # RELATÓRIOS DA VALIDAÇÃO
+    # =========================================================
+
+    save_cv_report(cv_results)
+
+    best_pipeline = pipelines[best_model_name]
+
+    compare_holdout_vs_cv(
+        pipeline=best_pipeline,
+        model_name=best_model_name,
+        X_train=X_train,
+        y_train=y_train,
+        cv_scores=cv_results[best_model_name]["results"]["test_pr_auc"],
+    )
+
+    plot_learning_curve(
+        pipeline=best_pipeline,
+        model_name=best_model_name,
+        X_train=X_train,
+        y_train=y_train,
+        cv=kf,
+    )
+
+    # =========================================================
     # RETORNO
     # =========================================================
 
@@ -468,3 +527,178 @@ def cross_validate_models(
         best_model_name,
         best_threshold,
     )
+
+
+# =============================================================
+# FUNÇÕES DE APOIO À VALIDAÇÃO
+# =============================================================
+
+
+def save_cv_report(cv_results, output_path=REPORTS_DIR / "cv_results.csv"):
+    """
+    Salva a comparação dos modelos na validação cruzada:
+    média e desvio dos folds, gap de overfitting e threshold escolhido.
+    """
+
+    rows = []
+
+    for name, result in cv_results.items():
+
+        summary = result["summary"].set_index("metric")
+
+        rows.append(
+            {
+                "model": name,
+                "roc_auc_mean": summary.loc["roc_auc", "mean"],
+                "pr_auc_mean": summary.loc["pr_auc", "mean"],
+                "pr_auc_std": summary.loc["pr_auc", "std"],
+                "pr_auc_train": summary.loc["pr_auc", "train_mean"],
+                "pr_auc_gap": summary.loc["pr_auc", "gap"],
+                "threshold": result["threshold"],
+                "precision_oof": result["precision"],
+                "recall_oof": result["recall"],
+                "f1_oof": result["f1_oof"],
+            }
+        )
+
+    report = (
+        pd.DataFrame(rows)
+        .sort_values("f1_oof", ascending=False)
+        .round(4)
+    )
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    report.to_csv(output_path, index=False)
+
+    logger.info(f"Comparação dos modelos:\n{report.to_string(index=False)}")
+    logger.success(f"Relatório da validação cruzada salvo em: {output_path}")
+
+    return report
+
+
+def compare_holdout_vs_cv(
+    pipeline,
+    model_name,
+    X_train,
+    y_train,
+    cv_scores,
+    n_repeats=5,
+    output_path=REPORTS_DIR / "holdout_vs_cv.csv",
+):
+    """
+    Compara validação SEM cross-validation (um único split treino/validação)
+    com a validação COM cross-validation.
+
+    Repetimos o holdout com sementes diferentes: se o resultado muda muito
+    de uma semente para outra, uma única divisão não é confiável para
+    escolher modelo e threshold. A cross-validation usa todos os dados
+    para validar e entrega média +/- desvio.
+    """
+
+    holdout_scores = []
+
+    for seed in range(n_repeats):
+
+        X_tr, X_val, y_tr, y_val = train_test_split(
+            X_train,
+            y_train,
+            test_size=0.2,
+            stratify=y_train,
+            random_state=seed,
+        )
+
+        model = clone(pipeline)
+        model.fit(X_tr, y_tr)
+
+        y_proba = model.predict_proba(X_val)[:, 1]
+        holdout_scores.append(average_precision_score(y_val, y_proba))
+
+    comparison = pd.DataFrame(
+        {
+            "estrategia": [
+                f"holdout (1 split, {n_repeats} sementes)",
+                f"cross-validation ({len(cv_scores)} folds)",
+            ],
+            "pr_auc_media": [np.mean(holdout_scores), np.mean(cv_scores)],
+            "pr_auc_min": [np.min(holdout_scores), np.min(cv_scores)],
+            "pr_auc_max": [np.max(holdout_scores), np.max(cv_scores)],
+        }
+    ).round(4)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    comparison.to_csv(output_path, index=False)
+
+    logger.info(
+        f"[{model_name}] Holdout x Cross-Validation (PR-AUC):\n"
+        f"{comparison.to_string(index=False)}"
+    )
+    logger.info(
+        f"Com um único split, o PR-AUC poderia ser qualquer valor entre "
+        f"{np.min(holdout_scores):.3f} e {np.max(holdout_scores):.3f}, "
+        f"dependendo apenas da sorte na divisão."
+    )
+
+    return comparison
+
+
+def plot_learning_curve(
+    pipeline,
+    model_name,
+    X_train,
+    y_train,
+    cv,
+    output_path=FIGURES_DIR / "learning_curve.png",
+):
+    """
+    Curva de aprendizado: desempenho no treino e na validação
+    conforme aumentamos a quantidade de dados de treino.
+
+    - Curvas distantes  -> overfitting (mais dados ou menos complexidade ajudam)
+    - Curvas próximas e baixas -> underfitting (modelo simples demais)
+    - Curvas próximas e estáveis -> boa generalização
+    """
+
+    train_sizes, train_scores, val_scores = learning_curve(
+        estimator=pipeline,
+        X=X_train,
+        y=y_train,
+        cv=cv,
+        scoring="average_precision",
+        train_sizes=np.linspace(0.1, 1.0, 5),
+        n_jobs=-1,
+    )
+
+    train_mean = train_scores.mean(axis=1)
+    val_mean = val_scores.mean(axis=1)
+    val_std = val_scores.std(axis=1)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    ax.plot(train_sizes, train_mean, marker="o", label="Treino")
+    ax.plot(train_sizes, val_mean, marker="o", label="Validação (CV)")
+    ax.fill_between(
+        train_sizes,
+        val_mean - val_std,
+        val_mean + val_std,
+        alpha=0.2,
+    )
+
+    ax.set(
+        xlabel="Quantidade de pedidos no treino",
+        ylabel="PR-AUC",
+        title=f"Curva de aprendizado - {model_name}",
+    )
+    ax.grid(alpha=0.3)
+    ax.legend()
+
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=150)
+    plt.close(fig)
+
+    logger.info(
+        f"[{model_name}] Curva de aprendizado: PR-AUC treino={train_mean[-1]:.3f} "
+        f"| validação={val_mean[-1]:.3f} com todos os dados de treino."
+    )
+    logger.success(f"Curva de aprendizado salva em: {output_path}")

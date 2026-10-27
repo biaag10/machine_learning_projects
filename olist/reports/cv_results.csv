@@ -1,0 +1,4 @@
+model,roc_auc_mean,pr_auc_mean,pr_auc_std,pr_auc_train,pr_auc_gap,threshold,precision_oof,recall_oof,f1_oof
+XGBoost,0.7722,0.267,0.0049,0.2955,0.0286,0.14,0.262,0.4442,0.3296
+LightGBM,0.7727,0.2676,0.0032,0.2979,0.0303,0.14,0.2607,0.4434,0.3284
+Gradient Boosting,0.7706,0.2652,0.0058,0.3084,0.0432,0.13,0.2548,0.4593,0.3277
