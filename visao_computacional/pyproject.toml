@@ -1,0 +1,47 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "module_visao_computacional"
+version = "0.0.1"
+description = "Projeto de Vis\u00e3o Computacional"
+authors = [
+  { name = "Bianca Andrade" },
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License"
+]
+dependencies = [
+    "ipykernel>=7.4.0",
+    "loguru",
+    "matplotlib>=3.11.2",
+    "mkdocs",
+    "numpy>=2.5.4",
+    "opencv-python>=5.0.0.93",
+    "pip",
+    "pytest",
+    "python-dotenv",
+    "ruff",
+    "tensorflow>=2.21.0",
+    "tqdm",
+    "typer",
+]
+requires-python = "==3.12.10"
+
+
+[tool.ruff]
+line-length = 99
+src = ["module_visao_computacional"]
+include = ["pyproject.toml", "module_visao_computacional/**/*.py"]
+
+[tool.ruff.lint]
+extend-select = ["I"]  # Add import sorting
+
+[tool.ruff.lint.isort]
+known-first-party = ["module_visao_computacional"]
+force-sort-within-sections = true
+
