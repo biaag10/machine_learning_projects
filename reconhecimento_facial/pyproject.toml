@@ -1,0 +1,40 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "module_reconhecimento_facial"
+version = "0.0.1"
+description = "Controle de acesso por reconhecimento facial com OpenCV e DeepFace."
+authors = [
+  { name = "Bianca Andrade" },
+]
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "deepface>=0.0.103",
+    "loguru",
+    # O detector Haar Cascade do OpenCV (usado pelo DeepFace) saiu do pacote principal no OpenCV 5
+    "opencv-python<5",
+    "pytest",
+    "ruff",
+    # O DeepFace usa a API do Keras 2 sobre o TensorFlow
+    "tf-keras>=2.21.0",
+    # Dependência do DeepFace que não é instalada automaticamente
+    "werkzeug",
+]
+requires-python = "==3.12.10"
+
+[tool.ruff]
+line-length = 99
+src = ["module_reconhecimento_facial"]
+include = ["pyproject.toml", "module_reconhecimento_facial/**/*.py"]
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["module_reconhecimento_facial"]
+force-sort-within-sections = true
