@@ -11,6 +11,7 @@ Projeto de Deep Learning da disciplina de Machine Learning (SENAI CIMATEC), com 
 | Notebook / módulo | O que mostra |
 |---|---|
 | `notebooks/atividade_tensorflow.ipynb` | Neurônio artificial, pesos e bias, ReLU, sigmoid, forward pass, threshold e Binary Cross-Entropy (sem treino) |
+| `notebooks/02_treinamento_redes_neurais_keras.ipynb` | Como a rede aprende: backpropagation com `tf.GradientTape`, learning rate, Keras `fit`, Adam × SGD, funções de ativação, MLP para risco de atraso na Olist, overfitting e regularização (Dropout, BatchNorm, Early Stopping) |
 | `notebooks/Classificador_Imagens-v1.ipynb` e `-v2.ipynb` | CNN para classificar imagens do CIFAR-10 |
 | `module_deep_learning/` | Pipeline modular da CNN do CIFAR-10: dados → features → split → modelo → treino → avaliação → inferência → gráficos |
 
@@ -23,6 +24,9 @@ uv sync
 ```
 
 **Notebooks:** abra no VS Code/Jupyter com o kernel do ambiente do projeto.
+O notebook `02_treinamento_redes_neurais_keras.ipynb` usa a base refinada do projeto Olist
+(`../olist/data/interim/orders_dataset_refined.csv`), gerada por
+`uv run python -m module_olist.main` dentro da pasta `olist/`.
 
 **Pipeline da CNN (CIFAR-10):**
 
