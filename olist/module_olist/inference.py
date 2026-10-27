@@ -5,22 +5,11 @@ from module_olist.config import (
     INTERIM_DATA_DIR,
     MODELS_DIR,
 )
+from module_olist.features import FEATURES
 from module_olist.modeling.predict import (
     load_model,
     predict,
 )
-
-FEATURES = [
-    "promised_days",
-    "item_count",
-    "seller_count",
-    "total_price",
-    "total_freight",
-    "purchase_month",
-    "purchase_weekday",
-    "purchase_hour",
-    "customer_state",
-]
 
 
 def run_inference(

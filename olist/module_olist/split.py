@@ -1,21 +1,7 @@
 import pandas as pd
-
 from sklearn.model_selection import train_test_split
 
-
-FEATURES = [
-    "promised_days",
-    "purchase_hour",
-    "purchase_weekday",
-    "purchase_month",
-    "item_count",
-    "seller_count",
-    "total_price",
-    "total_freight",
-    "customer_state",
-]
-
-TARGET = "is_late"
+from module_olist.features import FEATURES, TARGET
 
 
 def split_data(data: pd.DataFrame):

@@ -5,20 +5,8 @@ from sklearn.ensemble import GradientBoostingClassifier
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 
-NUMERIC_FEATURES = [
-    "promised_days",
-    "item_count",
-    "seller_count",
-    "total_price",
-    "total_freight",
-]
-
-CATEGORICAL_FEATURES =[
-    "purchase_hour",
-    "purchase_weekday",
-    "purchase_month",
-    "customer_state",
-]
+# As listas de features ficam em features.py (fonte única).
+from module_olist.features import CATEGORICAL_FEATURES, NUMERIC_FEATURES
 
 
 def create_preprocessor() -> ColumnTransformer:
