@@ -121,11 +121,11 @@ def main():
     )
 
     # =============================================
-    # INFERÊNCIA DE EXEMPLO
+    # INFERÊNCIA EM PEDIDOS NOVOS
     # =============================================
 
+    # Aplica o modelo nos pedidos AINDA EM ABERTO (aprovados e não entregues)
     run_inference(
-        data=data,
         model=model,
         model_name=best_model_name,
         threshold=best_threshold,

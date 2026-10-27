@@ -167,3 +167,49 @@ def create_dataset(orders, items, customers):
     )
     
     return data
+
+
+# =============================================================================
+# BASE PARA INFERÊNCIA (pedidos novos, ainda sem resultado)
+# =============================================================================
+
+# Pedidos já aprovados que ainda não chegaram ao cliente.
+# É exatamente o cenário de uso do modelo: prever o risco logo após a aprovação.
+OPEN_STATUSES = ["approved", "invoiced", "processing", "shipped"]
+
+
+def create_inference_dataset(orders, items, customers):
+    """
+    Monta a base de pedidos EM ABERTO para inferência.
+
+    Diferente de create_dataset(), aqui não existe alvo (is_late):
+    esses pedidos ainda não foram entregues, então não sabemos se vão atrasar.
+    A integração (itens agregados + estado do cliente) é a mesma do treino.
+    """
+
+    open_orders = orders.loc[
+        orders["order_status"].isin(OPEN_STATUSES)
+        # A previsão acontece na aprovação: sem aprovação, não há o que prever.
+        & orders["order_approved_at"].notna()
+        & orders["order_estimated_delivery_date"].notna()
+    ].copy()
+
+    items_agg = aggregate_items(items)
+
+    data = open_orders.merge(
+        items_agg,
+        on="order_id",
+        how="inner",          # pedido sem itens não tem preço/frete para prever
+        validate="one_to_one",
+    )
+
+    data = data.merge(
+        customers[["customer_id", "customer_state", "customer_city"]],
+        on="customer_id",
+        how="left",
+        validate="many_to_one",
+    )
+
+    logger.info(f"Pedidos em aberto para inferência: {len(data):,}")
+
+    return data

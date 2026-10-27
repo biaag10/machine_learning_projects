@@ -56,7 +56,7 @@ def test_treino_salva_modelo_e_metadados(tmp_path):
     assert metadata["features"] == FEATURES
 
     predictions = predict(model, X.head(5), threshold)
-    assert set(predictions.columns) == {"prob_is_late", "prediction"}
+    assert set(predictions.columns) == {"prob_is_late", "prediction", "risk_level"}
     assert predictions["prob_is_late"].between(0, 1).all()
 
 
