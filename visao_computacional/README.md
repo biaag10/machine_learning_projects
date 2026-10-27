@@ -15,6 +15,14 @@ Aplicar redes neurais a **dados não estruturados (imagens)**:
 - Redes Neurais Convolucionais (CNN): convolução, filtros, pooling, flatten e camadas densas;
 - classificação de imagens com CNN.
 
+## Conteúdo
+
+| Notebook | O que mostra |
+|---|---|
+| `notebooks/Classificador_Imagens.ipynb` | Fundamentos de imagens (pixels, canais RGB, normalização), CNN base × CNN melhorada (Data Augmentation, Batch Normalization, Dropout, callbacks) no CIFAR-10, matriz de confusão, acerto por classe, filtros e mapas de características, e classificação de uma imagem nova |
+
+O melhor modelo treinado é salvo em `models/classificador_cifar10.keras`.
+
 ## Como executar
 
 Pré-requisito: [uv](https://docs.astral.sh/uv/) instalado.
