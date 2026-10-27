@@ -4,58 +4,67 @@
     <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
 </a>
 
-Projeto de Deep Learning
+Projeto de Deep Learning da disciplina de Machine Learning (SENAI CIMATEC), com TensorFlow e Keras.
 
-## Project Organization
+## Conteúdo
 
-```
-├── LICENSE            <- Open-source license if one is chosen
-├── Makefile           <- Makefile with convenience commands like `make data` or `make train`
-├── README.md          <- The top-level README for developers using this project.
-├── data
-│   ├── external       <- Data from third party sources.
-│   ├── interim        <- Intermediate data that has been transformed.
-│   ├── processed      <- The final, canonical data sets for modeling.
-│   └── raw            <- The original, immutable data dump.
-│
-├── docs               <- A default mkdocs project; see www.mkdocs.org for details
-│
-├── models             <- Trained and serialized models, model predictions, or model summaries
-│
-├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-│                         the creator's initials, and a short `-` delimited description, e.g.
-│                         `1.0-jqp-initial-data-exploration`.
-│
-├── pyproject.toml     <- Project configuration file with package metadata for 
-│                         module_deep_learning and configuration for tools like black
-│
-├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-│
-├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-│   └── figures        <- Generated graphics and figures to be used in reporting
-│
-├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-│                         generated with `pip freeze > requirements.txt`
-│
-├── setup.cfg          <- Configuration file for flake8
-│
-└── module_deep_learning   <- Source code for use in this project.
-    │
-    ├── __init__.py             <- Makes module_deep_learning a Python module
-    │
-    ├── config.py               <- Store useful variables and configuration
-    │
-    ├── dataset.py              <- Scripts to download or generate data
-    │
-    ├── features.py             <- Code to create features for modeling
-    │
-    ├── modeling                
-    │   ├── __init__.py 
-    │   ├── predict.py          <- Code to run model inference with trained models          
-    │   └── train.py            <- Code to train models
-    │
-    └── plots.py                <- Code to create visualizations
+| Notebook / módulo | O que mostra |
+|---|---|
+| `notebooks/atividade_tensorflow.ipynb` | Neurônio artificial, pesos e bias, ReLU, sigmoid, forward pass, threshold e Binary Cross-Entropy (sem treino) |
+| `notebooks/Classificador_Imagens-v1.ipynb` e `-v2.ipynb` | CNN para classificar imagens do CIFAR-10 |
+| `module_deep_learning/` | Pipeline modular da CNN do CIFAR-10: dados → features → split → modelo → treino → avaliação → inferência → gráficos |
+
+## Como executar
+
+Pré-requisito: [uv](https://docs.astral.sh/uv/) instalado.
+
+```bash
+uv sync
 ```
 
---------
+**Notebooks:** abra no VS Code/Jupyter com o kernel do ambiente do projeto.
 
+**Pipeline da CNN (CIFAR-10):**
+
+```bash
+uv run python -m module_deep_learning.main
+```
+
+Na primeira execução a base CIFAR-10 é baixada para `data/raw/cifar10.npz`.
+
+**Testes:**
+
+```bash
+uv run pytest tests
+```
+
+## Organização do projeto
+
+```
+├── Makefile           <- Comandos de conveniência (make requirements, make data, make train, make test)
+├── README.md          <- Este arquivo
+├── data               <- NÃO versionado (só a estrutura de pastas vai para o Git)
+│   ├── external
+│   ├── interim
+│   ├── processed
+│   └── raw            <- cifar10.npz (baixado na primeira execução)
+├── docs               <- Documentação mkdocs
+├── models             <- Modelos treinados (.keras)
+├── notebooks          <- Notebooks das aulas
+├── pyproject.toml     <- Dependências do projeto (uv)
+├── reports            <- Métricas, histórico de treino e figuras
+├── tests              <- Testes com pytest
+└── module_deep_learning
+    ├── config.py      <- Caminhos e hiperparâmetros
+    ├── dataset.py     <- Download e carga do CIFAR-10
+    ├── features.py    <- Normalização e data augmentation
+    ├── split.py       <- Separação treino/validação
+    ├── main.py        <- Orquestra o pipeline completo
+    ├── inference.py   <- Inferência de exemplo
+    ├── plots.py       <- Gráficos
+    └── modeling
+        ├── model.py   <- Arquitetura da CNN
+        ├── train.py   <- Treino com callbacks
+        ├── evaluate.py
+        └── predict.py
+```

@@ -1,5 +1,7 @@
-# Data
-/data/
+# Data: ignora os arquivos, mas mantém a estrutura de pastas (.gitkeep)
+/data/**
+!/data/**/
+!/data/**/.gitkeep
 
 # Mac OS-specific storage files
 .DS_Store

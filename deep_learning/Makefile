@@ -4,7 +4,7 @@
 
 PROJECT_NAME = deep_learning
 PYTHON_VERSION = 3.12.10
-PYTHON_INTERPRETER = python
+PYTHON_INTERPRETER = uv run python
 
 #################################################################################
 # COMMANDS                                                                      #
@@ -43,7 +43,7 @@ format:
 ## Run tests
 .PHONY: test
 test:
-	python -m pytest tests
+	$(PYTHON_INTERPRETER) -m pytest tests
 
 
 ## Set up Python interpreter environment
@@ -62,10 +62,15 @@ create_environment:
 #################################################################################
 
 
-## Make dataset
+## Baixa a base CIFAR-10 para data/raw
 .PHONY: data
 data: requirements
-	$(PYTHON_INTERPRETER) module_deep_learning/dataset.py
+	$(PYTHON_INTERPRETER) -m module_deep_learning.dataset
+
+## Treina e avalia a CNN do CIFAR-10 (pipeline completo)
+.PHONY: train
+train: requirements
+	$(PYTHON_INTERPRETER) -m module_deep_learning.main
 
 
 #################################################################################
