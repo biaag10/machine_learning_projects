@@ -1,4 +1,6 @@
+from datetime import datetime
 import json
+
 import joblib
 
 from loguru import logger
@@ -88,12 +90,26 @@ def train_model(
     # Salva metadados
     # -------------------------------------------------
 
+    # Os metadados documentam COMO o modelo foi treinado.
+    # A inferência usa o threshold e a lista de features daqui,
+    # garantindo que a previsão use as mesmas regras do treino.
     metadata = {
         "model_name": model_name,
         "threshold": float(threshold),
-        "selection_metric": "pr_auc",
+        # O modelo vencedor é escolhido pelo F1 Out-of-Fold
+        # com threshold otimizado (cross_validation.py).
+        "selection_metric": "f1_oof",
         "threshold_metric": "f1",
+        "features": list(X_train.columns),
+        "n_train": int(len(X_train)),
+        "positive_rate_train": round(float(y_train.mean()), 4),
+        "trained_at": datetime.now().isoformat(timespec="seconds"),
     }
+
+    metadata_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     with open(
         metadata_path,

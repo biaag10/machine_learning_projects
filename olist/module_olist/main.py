@@ -116,6 +116,8 @@ def main():
         X_test=X_test,
         y_test=y_test,
         threshold=best_threshold,
+        X_train=X_train,
+        y_train=y_train,
     )
 
     # =============================================

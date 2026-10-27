@@ -1,0 +1,27 @@
+{
+    "model_name": "XGBoost",
+    "threshold": 0.14,
+    "n_test": 19290,
+    "metrics": {
+        "accuracy": 0.8539,
+        "precision": 0.2663,
+        "recall": 0.4562,
+        "f1": 0.3363,
+        "roc_auc": 0.765,
+        "pr_auc": 0.2629
+    },
+    "confusion_matrix": {
+        "tp": 714,
+        "fp": 1967,
+        "fn": 851,
+        "tn": 15758
+    },
+    "baseline_most_frequent": {
+        "accuracy": 0.9189,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": 0.5,
+        "pr_auc": 0.0811
+    }
+}

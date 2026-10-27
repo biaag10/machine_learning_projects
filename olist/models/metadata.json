@@ -1,6 +1,25 @@
 {
-    "model_name": "LightGBM",
+    "model_name": "XGBoost",
     "threshold": 0.14,
-    "selection_metric": "pr_auc",
-    "threshold_metric": "f1"
+    "selection_metric": "f1_oof",
+    "threshold_metric": "f1",
+    "features": [
+        "promised_days",
+        "item_count",
+        "seller_count",
+        "total_price",
+        "total_freight",
+        "approval_hours",
+        "avg_item_price",
+        "freight_ratio",
+        "is_short_deadline",
+        "is_weekend_purchase",
+        "purchase_hour",
+        "purchase_weekday",
+        "purchase_month",
+        "customer_state"
+    ],
+    "n_train": 77160,
+    "positive_rate_train": 0.0811,
+    "trained_at": "2026-10-26T23:51:30"
 }
