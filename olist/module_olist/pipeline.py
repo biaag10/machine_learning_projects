@@ -13,7 +13,16 @@ def create_preprocessor() -> ColumnTransformer:
     return ColumnTransformer(
         transformers = [
             ("numeric", "passthrough", NUMERIC_FEATURES),
-            ("categorical", OneHotEncoder(handle_unknown="ignore"), CATEGORICAL_FEATURES),
+            # sparse_output=False: a saída do One-Hot é uma matriz densa (zeros reais).
+            # Com matriz esparsa, o XGBoost interpreta os zeros como VALOR AUSENTE,
+            # e o modelo treinado passa a se comportar diferente da mesma entrada em
+            # formato denso, que é o formato usado pelo SHAP. Com saída densa,
+            # treino, inferência e explicação enxergam exatamente os mesmos dados.
+            (
+                "categorical",
+                OneHotEncoder(handle_unknown="ignore", sparse_output=False),
+                CATEGORICAL_FEATURES,
+            ),
         ]
     )
     

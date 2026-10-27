@@ -1,0 +1,15 @@
+feature,mean_abs_shap
+purchase_month,0.4404
+customer_state,0.3907
+promised_days,0.3508
+total_freight,0.1673
+approval_hours,0.0598
+item_count,0.0442
+avg_item_price,0.0195
+seller_count,0.0157
+total_price,0.0052
+freight_ratio,0.0045
+is_weekend_purchase,0.002
+purchase_weekday,0.0011
+purchase_hour,0.0011
+is_short_deadline,0.0

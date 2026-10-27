@@ -3,18 +3,18 @@
     "threshold": 0.14,
     "n_test": 19290,
     "metrics": {
-        "accuracy": 0.8539,
-        "precision": 0.2663,
-        "recall": 0.4562,
-        "f1": 0.3363,
-        "roc_auc": 0.765,
-        "pr_auc": 0.2629
+        "accuracy": 0.8526,
+        "precision": 0.2636,
+        "recall": 0.4556,
+        "f1": 0.334,
+        "roc_auc": 0.7651,
+        "pr_auc": 0.2636
     },
     "confusion_matrix": {
-        "tp": 714,
-        "fp": 1967,
-        "fn": 851,
-        "tn": 15758
+        "tp": 713,
+        "fp": 1992,
+        "fn": 852,
+        "tn": 15733
     },
     "baseline_most_frequent": {
         "accuracy": 0.9189,
