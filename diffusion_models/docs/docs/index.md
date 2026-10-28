@@ -16,4 +16,4 @@ O `Makefile` concentra os comandos principais:
 - `make predict`: gera dígitos com o modelo treinado em `reports/figures/`;
 - `make test`: roda os testes.
 
-O roteiro de fala da apresentação está em [roteiro_de_fala.md](roteiro_de_fala.md).
+Os slides da apresentação estão em `reports/apresentacao/Apresentacao_Diffusion_Models.pdf`.

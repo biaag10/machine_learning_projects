@@ -154,17 +154,16 @@ diffusion_models/
 │   ├── interim
 │   ├── processed
 │   └── raw
-├── docs/                         <- Documentação mkdocs + roteiro de fala em Markdown
+├── docs/                         <- Documentação mkdocs
 ├── models/
 │   └── ddpm_mnist_ema.pt         <- Pesos do modelo treinado (EMA, CH = 32)
 ├── notebooks/
-│   ├── Diffusion_Models_MNIST_SD.ipynb            <- Notebook para rodar (Colab ou local)
-│   └── Diffusion_Models_MNIST_SD_executado.ipynb  <- Execução do experimento dos slides, com as saídas
+│   └── Diffusion_Models_MNIST_SD.ipynb <- Notebook para rodar (Colab ou local)
 ├── references/
 ├── reports/
 │   ├── metricas.csv              <- Acurácia, confiança, FID e tempo por configuração
 │   ├── figures/                  <- Figuras do notebook, GIF e diagramas usados nos slides
-│   └── apresentacao/             <- Slides (.pptx e .pdf), roteiro de fala (.docx) e versões anteriores
+│   └── apresentacao/             <- Slides da apresentação (PDF)
 ├── tests/
 │   └── test_diffusion.py
 └── module_diffusion_models
