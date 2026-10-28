@@ -1,0 +1,56 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "module_diffusion_models"
+version = "0.0.1"
+description = "Diffusion Models: DDPM condicional treinado do zero no MNIST + Stable Diffusion"
+authors = [
+  { name = "Bianca Andrade" },
+  { name = "Rafael Athaliba" },
+  { name = "Pedro Lima" },
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License"
+]
+dependencies = [
+    "accelerate",
+    "diffusers",
+    "gradio",
+    "ipykernel",
+    "loguru",
+    "matplotlib",
+    "mkdocs",
+    "numpy",
+    "pandas",
+    "pillow",
+    "pip",
+    "pytest",
+    "python-dotenv",
+    "ruff",
+    "scikit-learn",
+    "torch",
+    "torchmetrics[image]",
+    "torchvision",
+    "tqdm",
+    "transformers",
+    "typer",
+]
+requires-python = "==3.12.10"
+
+
+[tool.ruff]
+line-length = 99
+src = ["module_diffusion_models"]
+include = ["pyproject.toml", "module_diffusion_models/**/*.py"]
+
+[tool.ruff.lint]
+extend-select = ["I"]  # Add import sorting
+
+[tool.ruff.lint.isort]
+known-first-party = ["module_diffusion_models"]
+force-sort-within-sections = true
